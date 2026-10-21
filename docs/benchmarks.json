@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-09-23T10:42:54.097846+00:00",
+  "system": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "processor": "arm",
+    "python_version": "3.11.15"
+  },
+  "benchmarks": {
+    "telemetry_ingestion": {
+      "mean_ms": 0.548,
+      "p50_ms": 0.532,
+      "p95_ms": 0.662,
+      "p99_ms": 0.75,
+      "min_ms": 0.467,
+      "max_ms": 0.75,
+      "throughput_req_per_sec": 1879.7
+    },
+    "feature_store_window_10": {
+      "mean_ms": 0.305,
+      "p50_ms": 0.288,
+      "p95_ms": 0.444,
+      "p99_ms": 0.549,
+      "min_ms": 0.273,
+      "max_ms": 0.549
+    },
+    "feature_store_window_30": {
+      "mean_ms": 0.295,
+      "p50_ms": 0.29,
+      "p95_ms": 0.338,
+      "p99_ms": 0.416,
+      "min_ms": 0.278,
+      "max_ms": 0.416
+    },
+    "feature_store_window_50": {
+      "mean_ms": 0.303,
+      "p50_ms": 0.293,
+      "p95_ms": 0.359,
+      "p99_ms": 0.54,
+      "min_ms": 0.284,
+      "max_ms": 0.54
+    },
+    "ml_multi_model_inference": {
+      "mean_ms": 29.974,
+      "p50_ms": 26.469,
+      "p95_ms": 57.913,
+      "p99_ms": 69.506,
+      "min_ms": 24.064,
+      "max_ms": 69.506,
+      "throughput_req_per_sec": 37.8
+    },
+    "alert_rule_engine": {
+      "mean_ms": 0.002,
+      "p50_ms": 0.002,
+      "p95_ms": 0.003,
+      "p99_ms": 0.056,
+      "min_ms": 0.002,
+      "max_ms": 0.056
+    },
+    "rag_hybrid_retrieval": {
+      "mean_ms": 0.034,
+      "p50_ms": 0.033,
+      "p95_ms": 0.049,
+      "p99_ms": 0.049,
+      "min_ms": 0.032,
+      "max_ms": 0.049
+    },
+    "gateway_models_metadata": {
+      "mean_ms": 0.931,
+      "p50_ms": 0.925,
+      "p95_ms": 1.07,
+      "p99_ms": 1.203,
+      "min_ms": 0.79,
+      "max_ms": 1.203
+    },
+    "gateway_fleet_status": {
+      "mean_ms": 6.669,
+      "p50_ms": 7.382,
+      "p95_ms": 8.85,
+      "p99_ms": 9.373,
+      "min_ms": 4.998,
+      "max_ms": 9.373
+    },
+    "gateway_system_status": {
+      "mean_ms": 15.955,
+      "p50_ms": 15.027,
+      "p95_ms": 28.676,
+      "p99_ms": 28.676,
+      "min_ms": 14.267,
+      "max_ms": 28.676
+    }
+  }
+}

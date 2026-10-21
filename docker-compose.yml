@@ -1,0 +1,190 @@
+# ============================================================
+# MaintenAI— Docker Compose (Development Stack)
+# ============================================================
+# Usage:
+#   docker compose up -d              # Start all services
+#   docker compose up -d timescaledb redis qdrant mlflow  # Infrastructure only
+#   docker compose logs -f            # Tail logs
+#   docker compose down               # Stop all
+# ============================================================
+
+services:
+  # ---- Infrastructure ----
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: fp-timescaledb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-factorypulse}
+      POSTGRES_USER: ${POSTGRES_USER:-factorypulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-factorypulse_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-factorypulse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - factorypulse-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: fp-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-factorypulse_dev}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-factorypulse_dev}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - factorypulse-net
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: fp-qdrant
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - factorypulse-net
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.1
+    container_name: fp-mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    ports:
+      - "${MLFLOW_PORT:-5001}:5000"
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - factorypulse-net
+
+  # ---- Application Services ----
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api_gateway/Dockerfile
+    container_name: fp-api-gateway
+    env_file: .env
+    ports:
+      - "${API_GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - factorypulse-net
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    container_name: fp-ingestion
+    env_file: .env
+    ports:
+      - "${INGESTION_SERVICE_PORT:-8003}:8003"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - factorypulse-net
+
+  inference:
+    build:
+      context: .
+      dockerfile: services/inference/Dockerfile
+    container_name: fp-inference
+    env_file: .env
+    ports:
+      - "${INFERENCE_SERVICE_PORT:-8001}:8001"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    networks:
+      - factorypulse-net
+
+  copilot:
+    build:
+      context: .
+      dockerfile: services/copilot/Dockerfile
+    container_name: fp-copilot
+    env_file: .env
+    ports:
+      - "${COPILOT_SERVICE_PORT:-8002}:8002"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      inference:
+        condition: service_started
+    networks:
+      - factorypulse-net
+
+  simulator:
+    build:
+      context: .
+      dockerfile: services/simulator/Dockerfile
+    container_name: fp-simulator
+    env_file: .env
+    depends_on:
+      ingestion:
+        condition: service_started
+    networks:
+      - factorypulse-net
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: fp-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      api-gateway:
+        condition: service_started
+    networks:
+      - factorypulse-net
+
+volumes:
+  timescaledb_data:
+  redis_data:
+  qdrant_data:
+  mlflow_artifacts:
+
+networks:
+  factorypulse-net:
+    driver: bridge

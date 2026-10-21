@@ -1,0 +1,8 @@
+{
+  "mrr": 1.0,
+  "precision_at_3": 1.0,
+  "recall_at_3": 1.0,
+  "mean_groundedness_score": 1.0,
+  "total_eval_queries": 5,
+  "passed_grounding_gate": true
+}

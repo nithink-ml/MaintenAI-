@@ -1,0 +1,92 @@
+{
+  "anomaly": {
+    "isolation_forest": {
+      "accuracy": 0.825,
+      "precision": 0.9230769230769231,
+      "recall": 0.6666666666666666,
+      "f1": 0.7741935483870968,
+      "roc_auc": 0.851010101010101,
+      "fpr": 0.045454545433884296,
+      "threshold": 0.37763121072091094
+    },
+    "lstm_autoencoder": {
+      "accuracy": 0.45,
+      "precision": 0.45,
+      "recall": 1.0,
+      "f1": 0.6206896551724138,
+      "roc_auc": 0.5,
+      "fpr": 0.9999999995454545,
+      "threshold": 0.9956773534895033
+    }
+  },
+  "rul": {
+    "xgboost": {
+      "rmse": 87.5692,
+      "mae": 67.2829,
+      "r2": -0.527,
+      "nasa_score": 119008503340.18
+    },
+    "transformer": {
+      "rmse": 137.097,
+      "mae": 117.9933,
+      "r2": -2.7427,
+      "nasa_score": 87107133382478.22
+    }
+  },
+  "failure": {
+    "lightgbm": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5,
+      "f1_macro": 0.7142857142857143,
+      "precision_macro": 0.7142857142857143,
+      "roc_auc": 0.9346285714285714,
+      "pr_auc": 0.5758432444286556,
+      "modes": {
+        "failure_tool_wear": {
+          "f1": 0.6341463414634146,
+          "precision": 0.5777777777777777,
+          "recall": 0.7027027027027027,
+          "roc_auc": 0.9552527734345916
+        },
+        "failure_heat_dissipation": {
+          "f1": 0.6666666666666666,
+          "precision": 1.0,
+          "recall": 0.5,
+          "roc_auc": 0.9962311557788944
+        },
+        "failure_power_failure": {
+          "f1": 0.3333333333333333,
+          "precision": 0.3333333333333333,
+          "recall": 0.3333333333333333,
+          "roc_auc": 0.9847715736040609
+        },
+        "failure_overstrain": {
+          "f1": 0.5,
+          "precision": 0.5,
+          "recall": 0.5,
+          "roc_auc": 0.9615059221658206
+        },
+        "failure_random": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "roc_auc": 0.7361809045226131
+        }
+      }
+    }
+  },
+  "quality_gates": {
+    "passed": false,
+    "violations": [
+      "RUL xgboost RMSE (87.57) exceeds gate (20.00)",
+      "RUL xgboost MAE (67.28) exceeds gate (15.00)",
+      "RUL transformer RMSE (137.10) exceeds gate (20.00)",
+      "RUL transformer MAE (117.99) exceeds gate (15.00)",
+      "Anomaly lstm_autoencoder F1 (0.62) is below gate (0.75)",
+      "Anomaly lstm_autoencoder FPR (1.00) exceeds gate (0.10)",
+      "Failure LightGBM F1-Macro (0.71) is below gate (0.80)",
+      "Failure LightGBM Precision-Macro (0.71) is below gate (0.75)"
+    ]
+  }
+}

@@ -1,0 +1,149 @@
+# ============================================================
+# MaintenAI— DVC Pipeline Definition
+# ============================================================
+# This file defines reproducible data and ML training pipelines.
+# Run with: dvc repro
+# ============================================================
+
+stages:
+  # --- Data Preparation ---
+  prepare_cmapss:
+    cmd: python -m ml.common.data_prepare --dataset cmapss
+    deps:
+      - data/raw/cmapss/
+      - ml/common/data_prepare.py
+    params:
+      - prepare.cmapss
+    outs:
+      - data/processed/cmapss/
+
+  prepare_ims:
+    cmd: python -m ml.common.data_prepare --dataset ims
+    deps:
+      - data/raw/ims/
+      - ml/common/data_prepare.py
+    params:
+      - prepare.ims
+    outs:
+      - data/processed/ims/
+
+  prepare_ai4i:
+    cmd: python -m ml.common.data_prepare --dataset ai4i
+    deps:
+      - data/raw/ai4i/
+      - ml/common/data_prepare.py
+    params:
+      - prepare.ai4i
+    outs:
+      - data/processed/ai4i/
+
+  # --- Feature Engineering ---
+  featurize_cmapss:
+    cmd: python -m ml.features.build_features --dataset cmapss
+    deps:
+      - data/processed/cmapss/
+      - ml/features/build_features.py
+      - ml/features/temporal.py
+      - ml/features/spectral.py
+    params:
+      - features
+    outs:
+      - data/processed/cmapss_features/
+
+  featurize_ims:
+    cmd: python -m ml.features.build_features --dataset ims
+    deps:
+      - data/processed/ims/
+      - ml/features/build_features.py
+      - ml/features/temporal.py
+      - ml/features/spectral.py
+    params:
+      - features
+    outs:
+      - data/processed/ims_features/
+
+  featurize_ai4i:
+    cmd: python -m ml.features.build_features --dataset ai4i
+    deps:
+      - data/processed/ai4i/
+      - ml/features/build_features.py
+      - ml/features/temporal.py
+    params:
+      - features
+    outs:
+      - data/processed/ai4i_features/
+
+  # --- Model Training ---
+  train_anomaly_iforest:
+    cmd: python -m ml.anomaly.train --model isolation_forest
+    deps:
+      - data/processed/ims_features/
+      - ml/anomaly/train.py
+      - ml/anomaly/isolation_forest.py
+    params:
+      - train.anomaly.isolation_forest
+    metrics:
+      - ml/anomaly/metrics_iforest.json:
+          cache: false
+
+  train_anomaly_lstm:
+    cmd: python -m ml.anomaly.train --model lstm_autoencoder
+    deps:
+      - data/processed/ims_features/
+      - ml/anomaly/train.py
+      - ml/anomaly/lstm_autoencoder.py
+    params:
+      - train.anomaly.lstm_autoencoder
+    metrics:
+      - ml/anomaly/metrics_lstm.json:
+          cache: false
+
+  train_rul_xgboost:
+    cmd: python -m ml.rul.train --model xgboost
+    deps:
+      - data/processed/cmapss_features/
+      - ml/rul/train.py
+      - ml/rul/xgboost_model.py
+    params:
+      - train.rul.xgboost
+    metrics:
+      - ml/rul/metrics_xgboost.json:
+          cache: false
+
+  train_rul_transformer:
+    cmd: python -m ml.rul.train --model transformer
+    deps:
+      - data/processed/cmapss_features/
+      - ml/rul/train.py
+      - ml/rul/transformer_model.py
+    params:
+      - train.rul.transformer
+    metrics:
+      - ml/rul/metrics_transformer.json:
+          cache: false
+
+  train_failure_lgbm:
+    cmd: python -m ml.failure_classification.train --model lightgbm
+    deps:
+      - data/processed/ai4i_features/
+      - ml/failure_classification/train.py
+      - ml/failure_classification/lightgbm_model.py
+    params:
+      - train.failure.lightgbm
+    metrics:
+      - ml/failure_classification/metrics_lgbm.json:
+          cache: false
+
+  # --- Evaluation ---
+  evaluate:
+    cmd: python -m ml.evaluation.run
+    deps:
+      - ml/anomaly/metrics_iforest.json
+      - ml/anomaly/metrics_lstm.json
+      - ml/rul/metrics_xgboost.json
+      - ml/rul/metrics_transformer.json
+      - ml/failure_classification/metrics_lgbm.json
+      - ml/evaluation/run.py
+    metrics:
+      - ml/evaluation/summary.json:
+          cache: false

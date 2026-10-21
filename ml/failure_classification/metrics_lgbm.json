@@ -1,0 +1,41 @@
+{
+  "precision": 0.5,
+  "recall": 0.5,
+  "f1": 0.5,
+  "f1_macro": 0.7142857142857143,
+  "precision_macro": 0.7142857142857143,
+  "roc_auc": 0.9346285714285714,
+  "pr_auc": 0.5758432444286556,
+  "modes": {
+    "failure_tool_wear": {
+      "f1": 0.6341463414634146,
+      "precision": 0.5777777777777777,
+      "recall": 0.7027027027027027,
+      "roc_auc": 0.9552527734345916
+    },
+    "failure_heat_dissipation": {
+      "f1": 0.6666666666666666,
+      "precision": 1.0,
+      "recall": 0.5,
+      "roc_auc": 0.9962311557788944
+    },
+    "failure_power_failure": {
+      "f1": 0.3333333333333333,
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "roc_auc": 0.9847715736040609
+    },
+    "failure_overstrain": {
+      "f1": 0.5,
+      "precision": 0.5,
+      "recall": 0.5,
+      "roc_auc": 0.9615059221658206
+    },
+    "failure_random": {
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "roc_auc": 0.7361809045226131
+    }
+  }
+}

@@ -1,0 +1,88 @@
+# ============================================================
+# MaintenAI .gitignore
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.production
+*.pem
+*.key
+
+# --- Data (DVC-managed) ---
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# --- ML Artifacts ---
+mlruns/
+models/*/*
+!models/*/.gitkeep
+*.onnx
+*.pt
+*.pth
+*.pkl
+*.joblib
+*.h5
+
+# --- Database ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- DVC ---
+/data/*.dvc
+
+# --- Node / Frontend ---
+node_modules/
+apps/frontend/node_modules/
+apps/frontend/.next/
+apps/frontend/out/
+apps/operations-console/node_modules/
+
+# --- Docker ---
+*.log
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Coverage & Linters ---
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Misc ---
+*.bak
+*.tmp

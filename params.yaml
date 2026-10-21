@@ -1,0 +1,134 @@
+# ============================================================
+# MaintenAI— Hyperparameters & Configuration
+# ============================================================
+# Referenced by dvc.yaml pipeline stages via `params:` keys.
+# ============================================================
+
+# --- Data Preparation ---
+prepare:
+  cmapss:
+    dataset_id: FD001
+    max_rul_clip: 125       # Piecewise-linear RUL target clipping
+    test_fraction: 0.2
+    val_fraction: 0.15
+    random_seed: 42
+  ims:
+    sampling_rate_hz: 20480
+    segment_duration_sec: 1.0
+    test_fraction: 0.2
+    random_seed: 42
+  ai4i:
+    test_fraction: 0.2
+    val_fraction: 0.15
+    random_seed: 42
+
+# --- Feature Engineering ---
+features:
+  cmapss:
+    rolling_window_sizes: [5, 10, 20]
+    ema_spans: [10, 30]
+    lag_steps: [1, 5]
+  ims:
+    rolling_window_sizes: [3, 5, 10]
+    ema_spans: [5, 10]
+  rolling_window_sizes: [5, 10, 20]
+  ema_spans: [10, 30]
+  lag_steps: [1, 5]
+  fft_n_components: 10
+  spectral_bands: [0.0, 0.1, 0.25, 0.5]
+  normalize: true
+  scaler: standard  # standard | minmax | robust
+
+
+# --- Model Training ---
+train:
+  anomaly:
+    isolation_forest:
+      n_estimators: 200
+      contamination: 0.05
+      max_features: 1.0
+      random_state: 42
+    lstm_autoencoder:
+      sequence_length: 50
+      hidden_dim: 64
+      num_layers: 2
+      dropout: 0.2
+      learning_rate: 0.001
+      epochs: 50
+      batch_size: 64
+      patience: 10
+      reconstruction_percentile: 95  # Threshold percentile on training error
+  rul:
+    xgboost:
+      n_estimators: 500
+      max_depth: 6
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+      min_child_weight: 3
+      random_state: 42
+      early_stopping_rounds: 20
+    transformer:
+      sequence_length: 30
+      d_model: 64
+      nhead: 4
+      num_encoder_layers: 3
+      dim_feedforward: 128
+      dropout: 0.1
+      learning_rate: 0.0005
+      epochs: 100
+      batch_size: 128
+      patience: 15
+      scheduler: cosine
+  failure:
+    lightgbm:
+      n_estimators: 500
+      max_depth: 8
+      learning_rate: 0.05
+      num_leaves: 63
+      min_child_samples: 20
+      subsample: 0.8
+      colsample_bytree: 0.8
+      class_weight: balanced
+      random_state: 42
+      early_stopping_rounds: 20
+
+# --- Evaluation Quality Gates ---
+evaluation:
+  rul:
+    max_rmse: 20.0          # Fail CI if RMSE > 20 cycles (C-MAPSS FD001)
+    max_mae: 15.0
+  anomaly:
+    min_f1: 0.75
+    max_fpr: 0.10
+  failure:
+    min_f1_macro: 0.80
+    min_precision_macro: 0.75
+
+# --- Alert Thresholds ---
+alerts:
+  anomaly_score_warning: 0.70
+  anomaly_score_critical: 0.85
+  rul_warning: 30
+  rul_critical: 15
+  failure_probability_warning: 0.50
+  failure_probability_critical: 0.70
+  hysteresis_cycles: 3       # Must exceed threshold for N consecutive cycles
+  dedup_window_minutes: 15   # Suppress duplicate alerts within this window
+
+# --- RAG ---
+rag:
+  chunk_size: 512
+  chunk_overlap: 64
+  top_k_retrieval: 10
+  top_k_rerank: 5
+  min_relevance_score: 0.3
+  groundedness_threshold: 0.90
+  collection_name: maintenance_docs
+
+# --- Drift Detection ---
+drift:
+  psi_threshold: 0.10
+  ks_alpha: 0.05
+  monitoring_window_hours: 24
+  min_samples: 100
